@@ -25,7 +25,9 @@ public class EchoClient {
 
 			// 2. 서버 연결
 			socket.connect(new InetSocketAddress(SERVER_IP, SERVER_PORT));
-
+			log("connected");
+			
+			
 			// 3. IOStream 받아오기
 			InputStream is = socket.getInputStream();
 			OutputStream os = socket.getOutputStream();
@@ -34,26 +36,38 @@ public class EchoClient {
 			while (true) {
 				// 4. 쓰기
 				System.out.print(">> ");
-				String data = s.nextLine();
-				if (data.equals("exit")) {
+				String line = s.nextLine();
+				if (line.equals("exit")) {
 					break;
 				}
-				pw.println(data);
+//				if("exit".contentEquals(line)) {
+//					break;
+//				}
+				
+				pw.println(line);
 
 				// 5. 읽기
-				String rec = br.readLine();
-				System.out.println("<< " + rec);
+				String data = br.readLine();
+				if(data == null) {
+					log("closed by server");
+					break;
+				}
+				System.out.println("<< " + data);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log("error : " + e);
 		} finally {
 			try {
 				if (socket != null && socket.isClosed() == false) {
 					socket.close();
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				log("error : " + e);
 			}
 		}
+	}
+
+	public static void log(String log) {
+		System.out.println("[client] " + log);
 	}
 }

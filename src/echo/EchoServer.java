@@ -23,59 +23,22 @@ public class EchoServer {
 			serverSocket = new ServerSocket();
 
 			// 2. 바인딩
-			InetAddress inetAddress = InetAddress.getLocalHost();
-			String localhostAddress = inetAddress.getHostAddress();
+			String localhostAddress = InetAddress.getLocalHost().getHostAddress();
 			serverSocket.bind(new InetSocketAddress(localhostAddress, PORT));
+			log("binding " + localhostAddress + ":" + PORT);
 
 			// 3. accept
-			System.out.println("[서버] 연결 기다림");
-//			while (true) {
-			Socket socket = serverSocket.accept();
-//				Thread thread = new EchoServerReceiveThread(socket);
-//				thread.start();
-//			}
-			//----------------------------------------
-
-			InetSocketAddress inetRemoteSocketAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
-			String remoteHostAddress = inetRemoteSocketAddress.getAddress().getHostAddress();
-			int remotePort = inetRemoteSocketAddress.getPort();
-
-			System.out.println("[서버] 연결됨 from " + remoteHostAddress + " : " + remotePort + "]");
-
-			try {
-				// 4. IOStream 받아오기
-				InputStream is = socket.getInputStream();
-				OutputStream os = socket.getOutputStream();
-				BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-				PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"), true);
-				while (true) {
-					// 5. 데이터 읽기
-					String rec = br.readLine();
-					if (rec == null) {
-						System.out.println("[서버] 클라이언트로 부터 연결 끊김");
-						break;
-					}
-					System.out.println("[서버] 데이터 수신 :" + rec);
-					// 6. 쓰기
-					pw.println(rec);
-				}
-			} catch (SocketException e) {
-				System.out.println("[server] abnormal closed by client");
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				try {
-					// 7. 자원정리(소켓 닫기)
-					if (socket != null && socket.isClosed() == false) {
-						socket.close();
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+//			System.out.println("[서버] 연결 기다림");
+			while (true) {
+				Socket socket = serverSocket.accept();
+				Thread thread = new EchoServerReceiveThread(socket);
+				thread.start();
 			}
-			//-----------------------------------------------------
+			// ----------------------------------------
+
+			// -----------------------------------------------------
 		} catch (IOException e) {
-			e.printStackTrace();
+			log("error : " + e);
 
 		} finally {
 			try {
@@ -83,7 +46,7 @@ public class EchoServer {
 					serverSocket.close();
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				log("error : " + e);
 			}
 		}
 	}
