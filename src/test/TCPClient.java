@@ -16,6 +16,21 @@ public class TCPClient {
 			// 1. 소켓 생성
 			socket = new Socket();
 
+			// 1-1. socket buffer size 확인
+			int receiveBufferSize = socket.getReceiveBufferSize();
+			int sendBufferSize = socket.getSendBufferSize();
+
+			System.out.println(receiveBufferSize + " : " + sendBufferSize);
+
+			// 1-2. socket buffer size 변경
+			socket.setReceiveBufferSize(1024 * 10);
+			socket.setSendBufferSize(1024 * 10);
+
+			receiveBufferSize = socket.getReceiveBufferSize();
+			sendBufferSize = socket.getSendBufferSize();
+
+			System.out.println(receiveBufferSize + " : " + sendBufferSize);
+
 			// 2. 서버 연결
 			socket.connect(new InetSocketAddress(SERVER_IP, SERVER_PORT));
 			System.out.println("[client] connected");
@@ -23,21 +38,21 @@ public class TCPClient {
 			// 3. IOStream 받아오기
 			InputStream is = socket.getInputStream();
 			OutputStream os = socket.getOutputStream();
-			
+
 			// 4. 쓰기
 			String data = "Hello World\n";
 			os.write(data.getBytes("UTF-8"));
-			
+
 			// 5. 읽기
 			byte[] buffer = new byte[256];
 			int readByteCount = is.read(buffer); // Blocking
-			if(readByteCount == -1) {
+			if (readByteCount == -1) {
 				System.out.println("[client] closed by server");
 				return;
 			}
-			data = new String(buffer, 0 , readByteCount, "UTF-8");
+			data = new String(buffer, 0, readByteCount, "UTF-8");
 			System.out.println("[client] received : " + data);
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
