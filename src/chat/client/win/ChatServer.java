@@ -1,4 +1,4 @@
-package chat;
+package chat.client.win;
 
 import java.io.Writer;
 import java.net.InetAddress;
@@ -19,10 +19,6 @@ public class ChatServer {
 			// 1. 서버 소켓 생성
 			serverSocket = new ServerSocket();
 
-			// 1-1 set option SO_REUSEADDR
-			// 종료후 빨리 바인딩 하기 위해서
-			serverSocket.setReuseAddress(true);
-
 			// 2. 바인딩
 			String localhostAddress = InetAddress.getLocalHost().getHostAddress();
 			serverSocket.bind(new InetSocketAddress(localhostAddress, PORT));
@@ -31,7 +27,7 @@ public class ChatServer {
 			// 3. 요청 대기
 			while (true) {
 				Socket socket = serverSocket.accept();
-				new ChatServerThread(socket, listWriters).start();
+				new ChatServerProcessThread(socket, listWriters).start();
 			}
 		} catch (Exception e) {
 			log("error : " + e);

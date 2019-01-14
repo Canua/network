@@ -51,6 +51,13 @@ public class TCPServer {
 					String data = new String(buffer, 0, readByteCount, "UTF-8");
 					System.out.println("[server] received :" + data);
 
+					// 5-1 Thread.sleep
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					
 					// 6. 데이터 쓰기
 					os.write(data.getBytes("UTF-8"));
 

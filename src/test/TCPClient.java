@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class TCPClient {
 	private static final String SERVER_IP = "218.39.221.92";
@@ -31,6 +32,12 @@ public class TCPClient {
 
 			System.out.println(receiveBufferSize + " : " + sendBufferSize);
 
+			// 1-3. SO_NODELAY ( Nagle Algorithm off )
+			socket.setTcpNoDelay(true); // 딜레이가 없게 설정
+
+			// 1-4. SO_TIMEOUT
+			socket.setSoTimeout(2000);
+
 			// 2. 서버 연결
 			socket.connect(new InetSocketAddress(SERVER_IP, SERVER_PORT));
 			System.out.println("[client] connected");
@@ -53,6 +60,8 @@ public class TCPClient {
 			data = new String(buffer, 0, readByteCount, "UTF-8");
 			System.out.println("[client] received : " + data);
 
+		} catch (SocketTimeoutException ex) {
+			System.out.println("[client] time out");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

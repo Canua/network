@@ -38,20 +38,25 @@ public class ChatClient {
 			System.out.print("닉네임>>");
 			String nickname = scanner.nextLine();
 			printWriter.println("join:" + nickname);
-//			printWriter.flush();
 
 			// 6. ChatClientReceiveThread 시작
 			new ChatClientThread(clientsocket).start();
 			// 7. 키보드 입력처리
 			while (true) {
-				// 쓰기
-				String input = scanner.nextLine();
-				if ("quit".equals(input) == true) {
-					// F 8. quit 프로토콜 처리
+				if (scanner.hasNextLine() == false) {
+					continue;
+				}
+
+				String message = scanner.nextLine();
+
+				if ("quit".equals(message)) {
+					printWriter.println("QUIT");
+					// System.exit(0);
 					break;
-				} else {
-					// 9. 메시지 처리
-					printWriter.println("message:" + input);
+				}
+
+				if ("".equals(message) == false) {
+					printWriter.println("message:" + message);
 				}
 			}
 		} catch (IOException e) {

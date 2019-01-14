@@ -1,4 +1,4 @@
-package chat;
+package chat.client.win;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class ChatServerThread extends Thread {
+public class ChatServerProcessThread extends Thread {
 	private String nickname;
 	private Socket socket;
 
@@ -18,12 +18,12 @@ public class ChatServerThread extends Thread {
 	BufferedReader bufferedReader = null;
 	PrintWriter printWriter = null;
 
-	public ChatServerThread(Socket socket) {
+	public ChatServerProcessThread(Socket socket) {
 		this.socket = socket;
 	}
 
 	// List 생성자
-	public ChatServerThread(Socket socket, List<Writer> listWriters) {
+	public ChatServerProcessThread(Socket socket, List<Writer> listWriters) {
 		this.socket = socket;
 		this.listWriters = listWriters;
 	}
@@ -53,8 +53,6 @@ public class ChatServerThread extends Thread {
 					doMessage(tokens[1]); // message 메소드
 				} else if ("quit".equals(tokens[0])) {
 					doQuit(printWriter); // 종료 메소드
-				} else {
-					ChatServer.log("에러 : 알수 없는 요청 (" + tokens[0] + ")");
 				}
 			}
 		} catch (Exception e) {
@@ -85,8 +83,8 @@ public class ChatServerThread extends Thread {
 		addWriter(writer);
 
 		// ack
-		printWriter.println("join: ok");
-		printWriter.flush();
+//		printWriter.println("join: ok");
+//		printWriter.flush();
 
 	}
 

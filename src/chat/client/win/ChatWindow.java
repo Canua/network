@@ -13,21 +13,34 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class ChatWindow {
-
+	private String name;
 	private Frame frame;
 	private Panel pannel;
 	private Button buttonSend;
 	private TextField textField;
 	private TextArea textArea;
 
-	public ChatWindow(String name) {
+	private Socket socket;
+
+	public ChatWindow(String name, Socket socket) {
+		this.name = name;
 		frame = new Frame(name);
 		pannel = new Panel();
 		buttonSend = new Button("Send");
 		textField = new TextField();
 		textArea = new TextArea(30, 80);
+		this.socket = socket;
+
+		new ChatClientReceiveThread(socket).start();
 	}
 
 	public void show() {
@@ -40,23 +53,16 @@ public class ChatWindow {
 				sendMessage();
 			}
 		});
-//		람다식
-//		buttonSend.addActionListener(e -> {
-//			sendMessage();
-//		});
 
 		// Textfield
 		textField.setColumns(80);
 		textField.addKeyListener(new KeyAdapter() {
-
-			@Override
-			public void keyPressed(KeyEvent e) {
+			public void keyReleased(KeyEvent e) {
 				char keyCode = e.getKeyChar();
 				if (keyCode == KeyEvent.VK_ENTER) {
 					sendMessage();
 				}
 			}
-
 		});
 
 		// Pannel
@@ -72,7 +78,16 @@ public class ChatWindow {
 		// Frame
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				System.exit(0);
+				PrintWriter pw;
+				try {
+					pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),
+							true);
+					String request = "quit\r\n";
+					pw.println(request);
+					System.exit(0);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 		frame.setVisible(true);
@@ -80,24 +95,40 @@ public class ChatWindow {
 	}
 
 	private void sendMessage() {
-		String message = textField.getText();
+		// Message 명령 처리
+		PrintWriter pw;
+		try {
+			pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
+			String message = textField.getText();
+			String request = "message:" + message + "\r\n";
+			pw.println(request);
 
-		// MESSAGE 명령 처리 요청
-		// "MESSAGE + message\r\n"
-
-		textArea.append("둘리 : " + message);
-		textArea.append("\n");
-
-		textField.setText("");
-		textField.requestFocus();
-
-	}
-	// 내부 클래스로 구현
-	private class ChatClientThread extends Thread {
-		@Override
-		public void run() {
-			textArea.append("");
+			textField.setText("");
+			textField.requestFocus();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+	}
 
+	private class ChatClientReceiveThread extends Thread {
+		Socket socket = null;
+
+		ChatClientReceiveThread(Socket socket) {
+			this.socket = socket;
+		}
+		
+		public void run() {
+			try {
+				BufferedReader br = new BufferedReader(
+						new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+				while (true) {
+					String msg = br.readLine();
+					textArea.append(msg);
+					textArea.append("\n");
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }

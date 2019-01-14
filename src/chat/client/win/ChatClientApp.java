@@ -1,8 +1,16 @@
 package chat.client.win;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class ChatClientApp {
+	private static final String SERVER_IP = "218.39.221.92";
+	private static final int SERVER_PORT = 5000;
 
 	public static void main(String[] args) {
 		String name = null;
@@ -10,27 +18,36 @@ public class ChatClientApp {
 
 		while (true) {
 
-			System.out.println("대화명을 입력하세요.");
+			System.out.println("nickName을 입력하세요.");
 			System.out.print(">>> ");
 			name = scanner.nextLine();
 
 			if (name.isEmpty() == false) {
 				break;
 			}
+
 			System.out.println("대화명은 한글자 이상 입력해야 합니다.\n");
 		}
 
 		scanner.close();
 
-		// JOIN 처리
-		// Response가 "JOIN:OK" 이면
+		Socket socket = new Socket();
+		try {
+			socket.connect(new InetSocketAddress(SERVER_IP, SERVER_PORT));
+			consoleLog("채팅방에 입장하였습니다.");
+			new ChatWindow(name, socket).show();
 
-		ChatWindow cw = new ChatWindow(name);
-
-		// THREAD
-//		ChatClientThread().start();
-
-		cw.show();
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),
+					true);
+			String request = "join:" + name + "\r\n";
+			pw.println(request);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+//		new ChatClientReceiveThread(cw).start();
 	}
 
+	private static void consoleLog(String log) {
+		System.out.println(log);
+	}
 }
